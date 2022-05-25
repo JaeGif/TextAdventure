@@ -4,129 +4,103 @@
 # Date Completed:
 # Notes: Ascribes player attributes
 
-# import initialize
-# import items
-# import item_functions
+import item_functions
+import items
+import pickle
 
 
 def save_player():
+    # this function saves the player information and returns none for a save file to be later accessed. Arg is inventory
     name_write = player_customized.name
     faction_write = player_customized.faction
-    print(name_write.strip(), faction_write)
 
     with open('save', 'w+') as f:
-        f.write(str(name_write.strip()) + '\n' + str(faction_write.strip()))
-    f.close()
+        f.write(str(name_write.strip()) + '\n' + str(faction_write.strip()) + '\n')
+        f.close()
 
 
 def load_player():
+    class Player:
+        def __init__(self, name, damage, health, faction, speed):
+            self.name = name
+            self.damage = damage
+            self.health = health
+            self.faction = faction
+            self.speed = speed
+
     with open('save', 'r') as f:
         lines = f.readlines()
         if not lines:
-            f.close()
             player = player_customization()
             return player
         else:
             save_name = lines[0]
             save_faction = lines[1]
-
         if 'Void' in save_faction:
-            class PlayerVoid:
-                def __init__(self, name, damage, health, speed):
-                    self.name = name
-                    self.damage = damage
-                    self.health = health
-                    self.faction = 'Void'
-                    self.speed = speed
-            player = PlayerVoid(save_name, 30, 50, 7)
-            f.close()
+            player = Player(save_name, 30, 50, 'Void', 7)
         elif 'Creature' in save_faction:
-            class PlayerCreature:
-                def __init__(self, name, damage, health, speed):
-                    self.name = name
-                    self.damage = damage
-                    self.health = health
-                    self.faction = 'Creature'
-                    self.speed = speed
-            player = PlayerCreature(save_name, 2, 200, 10)
+            player = Player(save_name, 30, 50, 'Creature', 7)
         elif 'Human' in save_faction:
-            class PlayerHuman:
-                def __init__(self, name, damage, health, speed):
-                    self.name = name
-                    self.damage = damage
-                    self.health = health
-                    self.faction = 'Human'
-                    self.speed = speed
-            player = PlayerHuman(save_name, 3, 100, 4)
+            player = Player(save_name, 30, 50, 'Human', 7)
         else:
             print('Error: save data corrupted.')
-        f.close()
+            return False
 
     return player
 
 
 def player_customization():
-    player_name = input('Name?: ')
+    player_name = str(input('Name?: '))
+    accepted_input = 'Void' or 'Creature' or 'Human'
     player_class = input('What faction do you want to represent?\nPlease enter Human, Creature, or Void: ')
+    if player_class == accepted_input:
+        class Player:
+            def __init__(self, name, damage, health, faction, speed):
+                self.name = name
+                self.damage = damage
+                self.health = health
+                self.faction = faction
+                self.speed = speed
 
-    class PlayerHuman:
-        def __init__(self, name, damage, health, speed):
-            self.name = name
-            self.damage = damage
-            self.health = health
-            self.faction = 'Human'
-            self.speed = speed
-
-    class PlayerCreature:
-        def __init__(self, name, damage, health, speed):
-            self.name = name
-            self.damage = damage
-            self.health = health
-            self.faction = 'Creature'
-            self.speed = speed
-
-    class PlayerVoid:
-        def __init__(self, name, damage, health, speed):
-            self.name = name
-            self.damage = damage
-            self.health = health
-            self.faction = 'Void'
-            self.speed = speed
-
-    if player_class == 'Void':
-        player = PlayerVoid(player_name, 30, 50, 7)
-
-        return player
-    elif player_class == 'Human':
-        player = PlayerHuman(player_name, 3, 100, 4)
-
-        return player
-    elif player_class == 'Creature':
-        player = PlayerCreature(player_name, 2, 200, 10)
-
-        return player
+        if player_class == 'Void':
+            # player (name, damage, health, faction, speed)
+            player = Player(player_name, 30, 50, 'Void', 7)
+            return player
+        elif player_class == 'Human':
+            # player (name, damage, health, faction, speed)
+            player = Player(player_name, 30, 50, 'Human', 7)
+            return player
+        elif player_class == 'Creature':
+            # player (name, damage, health, faction, speed)
+            player = Player(player_name, 30, 50, 'Creature', 7)
+            return player
     else:
-        print('Invalid Entry, try again.')
-        player_customization()
+        print('Bad input, try again')
+        player = player_customization()
+        return player
 
 
-def player_dict():
-    stats_properties = {
-        'faction': player_customized.faction,
-        'attack': player_customized.damage,
-        'health': player_customized.health,
-        'name': player_customized.name,  # insert player_name variable later
-        'speed': player_customized.speed,
-        'inventory_space': 0
-    }
-
-    stats_check = {
-        'name': 'Player Attributes: ',
-        'properties': stats_properties
-    }
-
-    return stats_check
+def pick_up_item(item, inv):
+    inv.append(item)
+    if item_functions.inventory_space_check(inv):
+        save_player()
+    return inv
 
 
+def load_inventory():
+    with open('inventory.pickle', 'rb') as f:
+        inv = pickle.load(f)
+    return inv
+
+
+def save_inventory(inv):
+    with open('inventory.pickle', 'wb') as f:
+        pickle.dump(inv, f, pickle.HIGHEST_PROTOCOL)
+
+
+inventory = ['Inventory:']
 player_customized = load_player()
+inventory = pick_up_item(items.sword, inventory)
 save_player()
+save_inventory(inventory)
+print(load_inventory())

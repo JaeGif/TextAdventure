@@ -3,8 +3,6 @@
 # Date Started: May 12, 22
 # Date Completed:
 # Notes: Item definitions
-
-
 # Weapons
 # 'damage': int
 # 'weight': int

@@ -7,8 +7,6 @@
 
 import enemies
 import player_save
-import items
-import item_functions
 
 
 def run_from_fight(enemy):

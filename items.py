@@ -9,10 +9,43 @@
 # 'damage_type': str
 # 'inventory_space': int
 
+import player_save
+import item_functions
+
+
+def inventory_space_check(inv):
+    inventory_weight = 0
+    max_inventory_size = 20
+
+    if inventory_weight == max_inventory_size:
+        return inventory_weight, max_inventory_size
+    elif inventory_weight < max_inventory_size:
+        return inventory_weight, max_inventory_size
+    elif inventory_weight > max_inventory_size:
+        inv.pop(-1)
+        print('You cant fit that!')
+        print('Used inventory space: ', inventory_weight)
+        return inventory_weight, max_inventory_size
+
+
+# class Weapons:
+  #  def __init__(self, name, damage, size):
+   #     self.name = name
+    #    self.damage = damage
+     #   self.size = size
+
+   # def pick_up_weapon(self, inv):
+    #    inv.append(self)
+     #   if item_functions.inventory_space_check(inv):
+      #      player_save.save_player()
+       # return inv
+
+
+# bow.pick_up_weapon(inventory)
+
 knife_properties = {
     'damage': 5,
     'weight': 2,
-    'damage_type': 'sharp',
     'inventory_space': 1
 }
 knife = {
@@ -22,7 +55,6 @@ knife = {
 sword_properties = {
     'damage': 8,
     'weight': 5,
-    'damage_type': 'sharp',
     'inventory_space': 2
 }
 sword = {
@@ -32,7 +64,6 @@ sword = {
 bow_properties = {
     'damage': 5,
     'weight': 1,
-    'damage_type': 'pierce',
     'inventory_space': 2
 }
 bow = {
@@ -42,7 +73,6 @@ bow = {
 mace_properties = {
     'damage': 10,
     'weight': 10,
-    'damage_type': 'blunt',
     'inventory_space': 5
 }
 mace = {
@@ -52,7 +82,6 @@ mace = {
 h2h_properties = {
     'damage': 2,
     'weight': 0,
-    'damage_type': 'blunt',
     'inventory_space': 0
 }
 h2h = {
@@ -62,7 +91,6 @@ h2h = {
 flail_properties = {
     'damage': 9,
     'weight': 8,
-    'damage_type': 'sharp',
     'inventory_space': 3
 }
 flail = {

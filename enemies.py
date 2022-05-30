@@ -40,15 +40,10 @@ class BossEnemy:
 knight = Enemy('Knight', 'Human', 8, 200, 3, 10)  # name, type, damage, health, speed, exp
 inspired = Enemy('Inspired', 'Human', 10, 150, 7, 4)  # name, type, damage, health, speed, exp
 uninspired = Enemy('Uninspired', 'Human', 4, 50, 3, 6)  # name, type, damage, health, speed, exp
-
-# Creature type enemies
 goblin = Enemy('Goblin', 'Creature', 2, 50, 6, 4)  # name, type, damage, health, speed, exp
 orc = Enemy('Orc', 'Creature', 7, 175, 5, 6)  # name, type, damage, health, speed, exp
 goomba = Enemy('Goomba', 'Creature', 2, 50, 2, 4)  # name, type, damage, health, speed, exp
 bug = Enemy('Goblin', 'Creature', 2, 50, 1, 4)  # name, type, damage, health, speed, exp
-
-
-# ???
 questionable_flower = Enemy('Flower?', '???', 100000, 100000, 100000, 1)  # name, type, damage, health, exp
 
 

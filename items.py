@@ -9,9 +9,6 @@
 # 'damage_type': str
 # 'inventory_space': int
 
-import player_save
-import item_functions
-
 
 def inventory_space_check(inv):
     inventory_weight = 0

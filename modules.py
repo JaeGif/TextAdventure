@@ -1,14 +1,22 @@
 # Author: Jae
-# Version: 2
+# Version: 0.3
 # Date Started: May 18th, 22
 # Date Completed: NA
 # Notes: This file contains most methods and functions for the text-adventure2 project. There is no ascribed main() here
 # just the library for basic functions
 
-import pickle
+from pickle import load, dump, HIGHEST_PROTOCOL
 import random
+import tkinter
+import customtkinter as ctk
+
 inventory = ['Inventory']
 # class constructions for enemies, player and weapons
+ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
+ctk.set_default_color_theme("green")  # Themes: blue (default), dark-blue, green
+
+window = ctk.CTk()
+window.geometry('750x500')
 
 
 class Enemy:
@@ -43,12 +51,12 @@ class Enemy:
             self.damage *= .75
             return self.damage, print('The {} is debuffed against you!'.format(self.name))
 
-        elif self.type == player.faction:  # same faction increases damage slightly
+        elif self.type == player.faction:  # same faction increases damage slightly just for fun
             self.damage *= 1.1
             return self.damage, print('The {} is slightly buffed against you!'.format(self.name))
 
         else:  # no type interaction just in case, or the ??? type
-            return self.damage, print('There seems to be some kind of problem ...')
+            return self.damage, print('There seems to be some kind of problem ... run!')
 
     def enemy_lose_hp(self, inc_damage):  # lose hp function based on incoming damage variable, returns players health
         self.health = self.health - inc_damage
@@ -83,19 +91,20 @@ class Enemy:
                 elif self.health <= 0:
                     print('You defeated a {}!'.format(self.name))
                     print('Remaining Health: {}'.format(player.health))
+                    print('+ {}XP'.format(self.experience))
+                    player.exp_gain(self.experience)
                     break
-
         return
 
 
 class Player:
-    def __init__(self, name, damage, health, faction, speed, level=1):
+    def __init__(self, name, faction, damage=20, health=50, experience=0, level=1):
         self.name = name
+        self.faction = faction
+        self.speed = 7
         self.damage = damage
         self.health = health
-        self.faction = faction
-        self.speed = speed
-        self.experience = 0
+        self.experience = experience
         self.level = level
 
     def player_damage(self, item, inv):
@@ -104,23 +113,37 @@ class Player:
         player_dmg = self.damage
         return item_dmg + player_dmg
 
-    def player_lose_hp(self, inc_damage):  # lose hp function based on incoming damage variable, returns players health
+    def player_lose_hp(self, inc_damage):
         """returns an updated metric of the player's health after an instance of damage, from any source"""
         self.health = self.health - inc_damage
-        return self.health
 
-    def player_get_hp(self, inc_health):  # gain hp function based on certain amount of health input (integer type)
-        """method is used to update an increase to the players HP"""
-        self.health = self.health + inc_health
-        return self.health
+    def player_get_hp(self, inc_health):
+        """method is used to update an increase to the players HP or restore health to a maximum value based on level"""
+        health_cap = (self.level * 5) + 50
+        if inc_health + self.health >= health_cap:
+            self.health = health_cap
+        else:
+            self.health = self.health + inc_health
 
     def exp_gain(self, exp):
+        """method for increasing exp and levels"""
         self.experience += exp
-        if self.experience >= 100:
+        exp_cap = 75 + (self.level * 25)
+        while self.experience >= exp_cap:
             self.level += 1
+            self.level_up()
             self.experience -= 100
-            save_player()
-            return self.level, self.experience
+
+        save_player()  # first update the exp, and level gained in the save file
+
+    def level_up(self):
+        """level up increments your damage and health stats, also restores 50 HP"""
+        damage_inc = random.randrange(1, 4)
+        hp_inc = random.randrange(3, 7)
+        self.damage += damage_inc
+        self.health += hp_inc
+        self.player_get_hp(50)
+        print('{} is level {}!\n +{} ATTACK \n +{} HP'.format(str(self.name).strip(), self.level, damage_inc, hp_inc))
 
 
 class Weapons:
@@ -170,8 +193,13 @@ def save_player():
     name_write = player.name
     faction_write = player.faction
     level_write = player.level
+    exp_write = player.experience
+    dmg_write = player.damage
+    health_write = int(player.health)
+    # save file lines[name, faction, level, experience, damage, health]
     with open('save', 'w+') as f:
-        f.write(str(name_write.strip()) + '\n' + str(faction_write.strip()) + '\n' + str(level_write).strip())
+        f.write(str(name_write.strip()) + '\n' + str(faction_write.strip()) + '\n' + str(level_write).strip() + '\n'
+                + str(exp_write).strip() + '\n' + str(dmg_write).strip() + '\n' + str(health_write).strip())
         f.close()
 
 
@@ -184,19 +212,22 @@ def load_player():
             player_c = player_customization()
             return player_c
         else:
+            # save file lines[name, faction, level, experience, damage, health]
             save_name = lines[0]
             save_faction = lines[1]
             save_level = int(lines[2])
+            save_experience = int(lines[3])
+            save_damage = int(lines[4])
+            save_health = int(lines[5])
         if 'Void' in save_faction:
-            player_c = Player(save_name, 30, 50, 'Void', 7, save_level)
+            player_c = Player(save_name, 'Void', save_damage, save_health, save_experience, save_level)
         elif 'Creature' in save_faction:
-            player_c = Player(save_name, 30, 50, 'Creature', 7, save_level)
+            player_c = Player(save_name, 'Creature', save_damage, save_health, save_experience, save_level)
         elif 'Human' in save_faction:
-            player_c = Player(save_name, 30, 50, 'Human', 7, save_level)
+            player_c = Player(save_name, 'Human', save_damage, save_health, save_experience, save_level)
         else:
             print('Error: save data corrupted.')
             return False
-
     return player_c
 
 
@@ -209,15 +240,15 @@ def player_customization():
     if player_class == accepted_input:
         if player_class == 'Void':
             # player (name, damage, health, faction, speed)
-            player_c = Player(player_name, 30, 50, 'Void', 7, 1)
+            player_c = Player(player_name, 'Void')
             return player_c
         elif player_class == 'Human':
             # player (name, damage, health, faction, speed)
-            player_c = Player(player_name, 30, 50, 'Human', 7, 1)
+            player_c = Player(player_name, 'Human')
             return player_c
         elif player_class == 'Creature':
             # player (name, damage, health, faction, speed)
-            player_c = Player(player_name, 30, 50, 'Creature', 7, 1)
+            player_c = Player(player_name, 'Creature')
             return player_c
     else:
         print('Bad input, try again')
@@ -228,22 +259,19 @@ def player_customization():
 def load_inventory():
     """loads the inventory list data using pickle so the list information can be accessed with minimal manipulation"""
     with open('inventory.pickle', 'rb') as f:
-        inv = pickle.load(f)
+        inv = load(f)
     return inv
 
 
 def save_inventory(inv):
     """saves the inventory list using pickle to retain the list structure"""
     with open('inventory.pickle', 'wb') as f:
-        pickle.dump(inv, f, pickle.HIGHEST_PROTOCOL)
+        dump(inv, f, HIGHEST_PROTOCOL)
 
 
 def call_item_damage(inv, weapons):
-    """checks the weapon damage to be added to the player's damage in combat, returns the damage value or a message
-    stating that you don't have the weapon you tried to reference"""
     if weapons.name in inv:
-        damage = weapons.damage
-        return damage
+        return weapons.damage
     else:
         print('You don\'t have that weapon!')
         return 0
@@ -262,7 +290,7 @@ def run_from_fight(enemy):
             print('You\'ve escaped!')
             return True
         elif escape_chance == speed_avg:  # if the speed of player and enemy is the same escape chance is 50/50
-            if random.choice([0, 1]) is 1:
+            if random.choice([0, 1]) == 1:
                 print('You\'ve escaped!')
                 return True
             else:
@@ -305,6 +333,15 @@ def player_fight_choice(enemy):
         run_from_fight(enemy)
 
 
+def start_game():
+    start = load_player()
+    return start
+
+
+start_button = ctk.CTkButton(master=window, text="Load Game", command=start_game)
+start_button.place(relx=.2, rely=.4, anchor=tkinter.CENTER)
+
+
 # initialized objects of weapons for testing
 knife = Weapons('knife', 5, 2)
 sword = Weapons('sword', 8, 2)
@@ -322,10 +359,7 @@ questionable_flower = Enemy('Flower?', '???', 100000, 100000, 100000, 1)
 
 
 # workflow area and check functionality
-player = load_player()
-inventory = bow.pick_up_weapon(inventory)
-
-# enemy encounter
+player = start_game()
+save_player()
 # enemy_encounter(inspired)
 # run_from_fight(inspired)
-print(player.level)

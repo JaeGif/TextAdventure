@@ -7,16 +7,9 @@
 
 from pickle import load, dump, HIGHEST_PROTOCOL
 import random
-import tkinter
-import customtkinter as ctk
+
 
 inventory = ['Inventory']
-# class constructions for enemies, player and weapons
-ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
-ctk.set_default_color_theme("green")  # Themes: blue (default), dark-blue, green
-
-window = ctk.CTk()
-window.geometry('750x500')
 
 
 class Enemy:
@@ -66,7 +59,7 @@ class Enemy:
         """This method generally encapsulates most instances of turn-based combat, looping through HP of both
         the enemy unit and the player until one of them dies. The function returns the experience values if the enemy
         dies and the players remaining health."""
-        player_damage = player.player_damage(bow, inventory)
+        player_damage = player.player_damage(inventory[1], inventory)
         # enemy unit's damage is subject to a multiplier based on the players chosen faction when they begin the run
         unit_damage, weakness = self.damage_type()
         # begin general combat looping if the enemy unit is still alive
@@ -333,19 +326,11 @@ def player_fight_choice(enemy):
         run_from_fight(enemy)
 
 
-def start_game():
-    start = load_player()
-    return start
-
-
-start_button = ctk.CTkButton(master=window, text="Load Game", command=start_game)
-start_button.place(relx=.2, rely=.4, anchor=tkinter.CENTER)
-
-
 # initialized objects of weapons for testing
 knife = Weapons('knife', 5, 2)
 sword = Weapons('sword', 8, 2)
 bow = Weapons('bow', 10, 5)
+h2h = Weapons('fists', 1, 0)
 
 # initialize test enemies
 knight = Enemy('Knight', 'Human', 8, 200, 3, 10)  # name, type, damage, health, speed, exp
@@ -358,8 +343,11 @@ bug = Enemy('Bug', 'Creature', 2, 50, 1, 4)
 questionable_flower = Enemy('Flower?', '???', 100000, 100000, 100000, 1)
 
 
-# workflow area and check functionality
-player = start_game()
+# Initialize instance of the player object
+print('Welcome to the TextAdventure Game Demo\n This game takes place in your python console but as I continue\n'
+      ' learning more python, javascript, HTML and CSS I plan on migrating the game to be browser based\n '
+      'for now please just enjoy the progress')
+input('Press Any Key to Continue:')
+player = load_player()
+Weapons.pick_up_weapon(h2h, inventory)
 save_player()
-# enemy_encounter(inspired)
-# run_from_fight(inspired)

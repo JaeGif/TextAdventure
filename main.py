@@ -6,7 +6,8 @@
 # Notes: main function encapsulating the aspects of gameplay
 from modules import *
 
-def main():
-
-
-main()
+if __name__ == '__main__':
+    print('So the adventure begins\n Hello {} This is a generic game intro,'.format(player.name),
+          'anyway lets get to fighting something!')
+    input()
+    enemy_encounter(bug)
